@@ -9,6 +9,7 @@ export default class ProdutosController extends Controller<Produto> {
     this.getAll = this.getAll.bind(this);
     this.getByUuid = this.getByUuid.bind(this);
     this.save = this.save.bind(this);
+    this.edit = this.edit.bind(this);
   }
 
   protected createInstance(data: Produto): Produto {
