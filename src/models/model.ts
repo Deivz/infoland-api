@@ -1,6 +1,6 @@
 import { openDatabase, closeDatabase } from "../database/database";
 
-export default class Model<T> {
+export default abstract class Model<T> {
   tableName?: string;
 
   constructor(tableName: string) {
@@ -57,7 +57,5 @@ export default class Model<T> {
     });
   }
 
-  protected createInstance(row: any): T {
-    throw new Error("Este método deve ser implementado na subclasse");
-  }
+  protected abstract createInstance(row: any): T
 }
