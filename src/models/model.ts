@@ -90,12 +90,12 @@ export default abstract class Model<T> {
     const values = Object.values(filteredItem);
     const placeholders = keys.map(key => `${key} = ?`).join(',');
 
-    const sql = `UPDATE ${this.tableName} SET ${placeholders} WHERE uuid = ?`;
+    const sql = `UPDATE ${this.tableName} SET ${placeholders} WHERE uuid = '${uuid}'`;
 
     return new Promise((resolve, reject) => {
       const db = openDatabase();
 
-      db.run(sql, [values, uuid], function (err) {
+      db.run(sql, values, function (err) {
         if (err) {
           console.error('Erro ao inserir dados:', err.message);
           reject(err);

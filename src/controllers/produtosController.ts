@@ -16,4 +16,9 @@ export default class ProdutosController extends Controller<Produto> {
     const { name, type, price, description } = data;
     return new Produto(undefined, randomUUID(), name, type, price, description);
   }
+
+  protected editInstance(data: Produto): Produto {
+    const { name, type, price, description } = data;
+    return new Produto(undefined, undefined, name, type, price, description);
+  }
 }

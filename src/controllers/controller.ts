@@ -54,7 +54,7 @@ export default abstract class Controller<T> {
 
   async edit(req: Request, res: Response) {
     try {
-      const newItem = this.createInstance(req.body);
+      const newItem = this.editInstance(req.body);
       await this.model.update(req.params.uuid, newItem);
       res.status(200).json({
         message: "Alterado com sucesso!",
@@ -67,4 +67,5 @@ export default abstract class Controller<T> {
   }
 
   protected abstract createInstance(data: T): T;
+  protected abstract editInstance(data: T): T;
 }
