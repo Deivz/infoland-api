@@ -7,6 +7,7 @@ export default class ProdutosController extends Controller<Produto> {
   constructor() {
     super(new Produto());
     this.getAll = this.getAll.bind(this);
+    this.getByUuid = this.getByUuid.bind(this);
     this.save = this.save.bind(this);
   }
 

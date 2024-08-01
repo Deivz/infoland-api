@@ -23,6 +23,20 @@ export default abstract class Controller<T> {
     }
   }
 
+  async getByUuid(req: Request, res: Response) {
+    try {
+      const data = await this.model.findByUuid(req.params.uuid);
+      res.json({
+        message: "success",
+        data
+      });
+    } catch (err: any) {
+      res.status(400).json({
+        error: err.message
+      });
+    }
+  }
+
   async save(req: Request, res: Response) {
     try {
       const newItem = this.createInstance(req.body);

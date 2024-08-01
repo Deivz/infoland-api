@@ -33,6 +33,25 @@ export default abstract class Model<T> {
     });
   }
 
+  findByUuid(uuid: string): Promise<T | null> {
+    const query = `SELECT * FROM ${this.tableName} WHERE uuid = ?`;
+
+    return new Promise((resolve, reject) => {
+      const db = openDatabase();
+
+      db.get(query, uuid, (err: Error | null, row?: T) => {
+        if (err) {
+          console.error('Erro ao buscar dados:', err.message);
+          reject(err);
+        } else {
+          resolve(row ? this.createInstance(row) : null);
+        }
+      });
+
+      closeDatabase(db);
+    });
+  }
+
   create(item: T): Promise<number> {
     const filteredItem = this.filterProperties(item);
     const keys = Object.keys(filteredItem);
