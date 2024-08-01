@@ -14,6 +14,14 @@ export default abstract class Model<T> {
     return filteredItem;
   }
 
+  private filterPropertiesNoUuid(item: T): Partial<T> {
+    const filteredItem = { ...item } as any;
+    delete filteredItem.tableName;
+    delete filteredItem.id;
+    delete filteredItem.uuid;
+    return filteredItem;
+  }
+
   findAll(): Promise<Array<T>> {
     const query = `SELECT * FROM ${this.tableName}`;
 
@@ -69,6 +77,30 @@ export default abstract class Model<T> {
           reject(err);
         } else {
           resolve(this.lastID);
+        }
+      });
+
+      closeDatabase(db);
+    });
+  }
+
+  update(uuid: string, item: T): Promise<void> {
+    const filteredItem = this.filterPropertiesNoUuid(item);
+    const keys = Object.keys(filteredItem);
+    const values = Object.values(filteredItem);
+    const placeholders = keys.map(key => `${key} = ?`).join(',');
+
+    const sql = `UPDATE ${this.tableName} SET ${placeholders} WHERE uuid = ?`;
+
+    return new Promise((resolve, reject) => {
+      const db = openDatabase();
+
+      db.run(sql, [values, uuid], function (err) {
+        if (err) {
+          console.error('Erro ao inserir dados:', err.message);
+          reject(err);
+        } else {
+          resolve();
         }
       });
 

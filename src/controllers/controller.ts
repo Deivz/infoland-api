@@ -12,7 +12,7 @@ export default abstract class Controller<T> {
   async getAll(req: Request, res: Response) {
     try {
       const data = await this.model.findAll();
-      res.json({
+      res.status(200).json({
         message: "success",
         data
       });
@@ -26,7 +26,7 @@ export default abstract class Controller<T> {
   async getByUuid(req: Request, res: Response) {
     try {
       const data = await this.model.findByUuid(req.params.uuid);
-      res.json({
+      res.status(200).json({
         message: "success",
         data
       });
@@ -41,9 +41,23 @@ export default abstract class Controller<T> {
     try {
       const newItem = this.createInstance(req.body);
       const id = await this.model.create(newItem);
-      res.json({
+      res.status(201).json({
         message: "Criado com sucesso!",
         data: { id }
+      });
+    } catch (err: any) {
+      res.status(400).json({
+        error: err.message
+      });
+    }
+  }
+
+  async edit(req: Request, res: Response) {
+    try {
+      const newItem = this.createInstance(req.body);
+      await this.model.update(req.params.uuid, newItem);
+      res.status(200).json({
+        message: "Alterado com sucesso!",
       });
     } catch (err: any) {
       res.status(400).json({
