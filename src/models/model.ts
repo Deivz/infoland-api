@@ -71,16 +71,22 @@ export default abstract class Model<T> {
     return new Promise((resolve, reject) => {
       const db = openDatabase();
 
-      db.run(sql, values, function (err) {
-        if (err) {
-          console.error('Erro ao inserir dados:', err.message);
-          reject(err);
-        } else {
-          resolve(this.lastID);
-        }
-      });
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
 
-      closeDatabase(db);
+        db.run(sql, values, function (err) {
+          if (err) {
+            console.error('Erro ao inserir dados:', err.message);
+            db.run('ROLLBACK', () => closeDatabase(db));
+            reject(err);
+          } else {
+            db.run('COMMIT', () => {
+              closeDatabase(db);
+              resolve(this.lastID);
+            });
+          }
+        });
+      });
     });
   }
 
@@ -95,16 +101,49 @@ export default abstract class Model<T> {
     return new Promise((resolve, reject) => {
       const db = openDatabase();
 
-      db.run(sql, values, function (err) {
-        if (err) {
-          console.error('Erro ao inserir dados:', err.message);
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
 
-      closeDatabase(db);
+        db.run(sql, values, function (err) {
+          if (err) {
+            console.error('Erro ao atualizar dados:', err.message);
+            db.run('ROLLBACK', () => closeDatabase(db));
+            reject(err);
+          } else {
+            db.run('COMMIT', () => {
+              closeDatabase(db);
+              resolve();
+            });
+          }
+        });
+      });
+    });
+  }
+
+  delete(uuid: string): Promise<void> {
+    const sql = `DELETE FROM ${this.tableName} WHERE uuid = '${uuid}'`;
+
+    return new Promise((resolve, reject) => {
+      const db = openDatabase();
+
+      db.serialize(() => {
+        db.run('BEGIN TRANSACTION');
+
+        db.run(sql, [], function (err) {
+          if (err) {
+            console.error('Erro ao excluir dados:', err.message);
+            db.run('ROLLBACK', () => {
+              closeDatabase(db);
+              reject(err);
+            });
+          } else {
+            db.run('COMMIT', () => {
+              closeDatabase(db);
+              resolve();
+            });
+          }
+        });
+      });
     });
   }
 

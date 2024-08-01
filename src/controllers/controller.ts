@@ -66,6 +66,17 @@ export default abstract class Controller<T> {
     }
   }
 
+  async delete(req: Request, res: Response) {
+    try {
+      await this.model.delete(req.params.uuid);
+      res.status(204).end();
+    } catch (err: any) {
+      res.status(400).json({
+        error: err.message
+      });
+    }
+  }
+
   protected abstract createInstance(data: T): T;
   protected abstract editInstance(data: T): T;
 }
