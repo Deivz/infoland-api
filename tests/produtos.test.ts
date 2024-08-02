@@ -96,19 +96,12 @@ describe('Products Routes', () => {
 
     // Assert
     expect(response.statusCode).toBe(201);
-    expect(response.body.message).toBe('Criado com sucesso!');
-  });
-
-  it('should bring a specific product by its uuid', async () => {
-    // Arrange
-
-    // Act
-    const response = await request(app)
-      .get(`/produtos/${uuidGlobal}`)
-
-    // Assert
-    expect(response.statusCode).toBe(200);
-    expect(response.body.message).toBe('success');
+    expect(response.body).toEqual({
+      message: 'Criado com sucesso!',
+      data: {
+        id
+      }
+    })
   });
 
   it('should bring all products created', async () => {
@@ -121,6 +114,35 @@ describe('Products Routes', () => {
     // Assert
     expect(response.statusCode).toBe(200);
     expect(response.body.message).toBe('success');
+    const productFound = response.body.data.find((prod: Produto) => prod.uuid === uuidGlobal);
+    expect(productFound).toEqual(expect.objectContaining({
+      uuid: uuidGlobal,
+      name: product.name,
+      type: product.type,
+      price: product.price,
+      description: product.description
+    }));
+  });
+
+  it('should bring a specific product by its uuid', async () => {
+    // Arrange
+
+    // Act
+    const response = await request(app)
+      .get(`/produtos/${uuidGlobal}`)
+
+    // Assert
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({
+      message: 'success',
+      data: {
+        uuid: uuidGlobal,
+        name: product.name,
+        type: product.type,
+        price: product.price,
+        description: product.description
+      }
+    })
   });
 
   it('should be able to edit a specific product', async () => {
