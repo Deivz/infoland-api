@@ -1,4 +1,4 @@
-import { openDatabase, closeDatabase } from "../database/database";
+import { openDatabase, closeDatabase } from "../config/database";
 
 export default abstract class Model<T> {
   tableName?: string;

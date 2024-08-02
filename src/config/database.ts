@@ -2,7 +2,7 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 
 const sqlite = sqlite3.verbose();
-const dbPath = path.resolve(__dirname, 'database.sqlite');
+const dbPath = path.resolve('./database/', 'database.sqlite');
 
 export function openDatabase(): sqlite3.Database {
   return new sqlite.Database(dbPath, (err) => {

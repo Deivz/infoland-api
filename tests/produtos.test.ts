@@ -1,7 +1,7 @@
 import { app } from "../src/app";
 import request from "supertest";
 import { expect, it, describe, beforeEach, afterEach } from "vitest";
-import { closeDatabase, openDatabase } from "../src/database/database";
+import { closeDatabase, openDatabase } from "../src/config/database";
 import Produto from "../src/models/produto";
 
 function createInstance(row: any): Produto {

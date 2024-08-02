@@ -1,4 +1,4 @@
-import {openDatabase, closeDatabase} from './database';
+import {openDatabase, closeDatabase} from '../src/config/database';
 
 const db = openDatabase();
 
