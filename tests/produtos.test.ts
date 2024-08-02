@@ -1,6 +1,6 @@
 import { app } from "../src/app";
 import request from "supertest";
-import { expect, it, describe, beforeEach } from "vitest";
+import { expect, it, describe, beforeEach, afterEach } from "vitest";
 import { closeDatabase, openDatabase } from "../src/database/database";
 import Produto from "../src/models/produto";
 
@@ -35,17 +35,42 @@ function findById(id: string): Promise<Produto | null> {
 }
 
 describe('Products Routes', () => {
+  let uuidGlobal: string
+  let idGlobal: string
 
-  let id: string
-  let product: {}
+  const product = {
+    name: 'Produto Teste',
+    type: 'Teste',
+    price: 10.50,
+    description: 'Descrição teste'
+  }
 
-  beforeEach(() => {
-    product = {
-      name: 'Produto Teste',
-      type: 'Teste',
-      price: 10.50,
-      description: 'Descrição teste'
+  const productUpdated = {
+    name: 'Produto Testado',
+    type: 'Teste',
+    price: 15.50,
+    description: 'Descrição testada'
+  }
+
+  beforeEach(async () => {
+    const productCreated = await request(app)
+      .post('/produtos')
+      .send(product)
+
+    idGlobal = productCreated.body.data.id
+
+    const productFound = await findById(idGlobal);
+
+    if (!productFound) {
+      throw new Error(`Product with id ${idGlobal} not found`);
     }
+
+    uuidGlobal = productFound.uuid
+  })
+
+  afterEach(async () => {
+    await request(app)
+      .delete(`/produtos/${uuidGlobal}`)
   })
 
   it('should be able to create a new product', async () => {
@@ -56,7 +81,18 @@ describe('Products Routes', () => {
       .post('/produtos')
       .send(product)
 
-    id = response.body.data.id
+    const id = response.body.data.id
+
+    const productFound = await findById(id);
+
+    if (!productFound) {
+      throw new Error(`Product with id ${id} not found`);
+    }
+
+    const uuid: string = productFound.uuid
+
+    await request(app)
+      .delete(`/produtos/${uuid}`)
 
     // Assert
     expect(response.statusCode).toBe(201);
@@ -65,17 +101,10 @@ describe('Products Routes', () => {
 
   it('should bring a specific product by its uuid', async () => {
     // Arrange
-    const foundProduct = await findById(id);
-
-    if (!foundProduct) {
-      throw new Error(`Product with id ${id} not found`);
-    }
-
-    const uuid: string = foundProduct.uuid
 
     // Act
     const response = await request(app)
-      .get(`/produtos/${uuid}`)
+      .get(`/produtos/${uuidGlobal}`)
 
     // Assert
     expect(response.statusCode).toBe(200);
@@ -96,18 +125,11 @@ describe('Products Routes', () => {
 
   it('should be able to edit a specific product', async () => {
     // Arrange
-    const productFound = await findById(id);
-
-    if (!productFound) {
-      throw new Error(`Product with id ${id} not found`);
-    }
-
-    const uuid: string = productFound.uuid
 
     // Act
     const response = await request(app)
-      .patch(`/produtos/${uuid}`)
-      .send(product)
+      .patch(`/produtos/${uuidGlobal}`)
+      .send(productUpdated)
 
     // Assert
     expect(response.statusCode).toBe(200);
@@ -116,6 +138,12 @@ describe('Products Routes', () => {
 
   it('should delete a specific product by its uuid', async () => {
     // Arrange
+    const productCreated = await request(app)
+      .post('/produtos')
+      .send(product)
+
+    const id = productCreated.body.data.id
+
     const productFound = await findById(id);
 
     if (!productFound) {
