@@ -1,6 +1,6 @@
 import { app } from "../src/app";
 import request from "supertest";
-import { expect, it, describe } from "vitest";
+import { expect, it, describe, beforeEach } from "vitest";
 import { closeDatabase, openDatabase } from "../src/database/database";
 import Produto from "../src/models/produto";
 
@@ -36,42 +36,34 @@ function findById(id: string): Promise<Produto | null> {
 
 describe('Products Routes', () => {
 
-  const product = {
-    name: 'Produto Teste',
-    type: 'Teste',
-    price: 10.50,
-    description: 'Descrição teste'
-  }
-
-  const productUpdate = {
-    name: 'Produto Testado',
-    type: 'Teste',
-    price: 15.50,
-    description: 'Descrição teste'
-  }
-
   let id: string
+  let product: {}
+
+  beforeEach(() => {
+    product = {
+      name: 'Produto Teste',
+      type: 'Teste',
+      price: 10.50,
+      description: 'Descrição teste'
+    }
+  })
 
   it('should be able to create a new product', async () => {
+    // Arrange
+
+    // Act
     const response = await request(app)
       .post('/produtos')
       .send(product)
-      .expect(201);
 
     id = response.body.data.id
 
+    // Assert
+    expect(response.statusCode).toBe(201);
     expect(response.body.message).toBe('Criado com sucesso!');
   });
 
-  it('should bring all products created', async () => {
-    const response = await request(app)
-      .get('/produtos')
-      .expect(200);
-
-    expect(response.body.message).toBe('success');
-  });
-
-  it('should delete a specific product by its uuid', async () => {
+  it('should bring a specific product by its uuid', async () => {
     // Arrange
     const foundProduct = await findById(id);
 
@@ -83,8 +75,58 @@ describe('Products Routes', () => {
 
     // Act
     const response = await request(app)
-      .delete(`/produtos/${uuid}`)
+      .get(`/produtos/${uuid}`)
+
+    // Assert
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe('success');
+  });
+
+  it('should bring all products created', async () => {
+    // Arrange
+
+    // Act
+    const response = await request(app)
+      .get('/produtos')
+
+    // Assert
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe('success');
+  });
+
+  it('should be able to edit a specific product', async () => {
+    // Arrange
+    const productFound = await findById(id);
+
+    if (!productFound) {
+      throw new Error(`Product with id ${id} not found`);
+    }
+
+    const uuid: string = productFound.uuid
+
+    // Act
+    const response = await request(app)
+      .patch(`/produtos/${uuid}`)
       .send(product)
+
+    // Assert
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe('Alterado com sucesso!');
+  });
+
+  it('should delete a specific product by its uuid', async () => {
+    // Arrange
+    const productFound = await findById(id);
+
+    if (!productFound) {
+      throw new Error(`Product with id ${id} not found`);
+    }
+
+    const uuid: string = productFound.uuid
+
+    // Act
+    const response = await request(app)
+      .delete(`/produtos/${uuid}`)
 
     // Assert
     expect(response.statusCode).toBe(204);
